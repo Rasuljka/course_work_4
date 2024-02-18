@@ -1,5 +1,5 @@
-from Vacancies import Vacancies
-from JsonData import JsonData
+from get_api_data import GetApiDataSuperJob, GetApiDataHeadHunter
+from json_data import JsonData
 
 
 def user_function():
@@ -7,14 +7,18 @@ def user_function():
     while True:
         user_input = input("Какой сайт для поиска работы Вас интересует? 1. HeadHunter, 2. Superjob, 0 - выход: ")
         if user_input == "1":
-            vacancies = Vacancies()
-            vac_list = vacancies.vacancies_list_hh()
+            hh = GetApiDataHeadHunter
+            vac_list = hh.get_api_data()
             json_data = JsonData()
             json_data.add(vac_list)
             second_user_input = input("Хотите вывести результаты в консоль? 1 - да, 2 - нет, 0 - выход: ")
             while True:
                 if second_user_input == "1":
                     json_data.read()
+                    list_vacancies = json_data.read()
+                    for vacancy in sorted(list_vacancies):
+                        print(vacancy)
+                        print("-" * 50)
                     break
                 elif second_user_input == "2":
                     break
@@ -48,14 +52,19 @@ def user_function():
                     print("Введите 1, 2 или 0!")
                     continue
         elif user_input == "2":
-            vacancies = Vacancies()
-            vac_list = vacancies.vacancies_list_sj()
+            sj = GetApiDataSuperJob()
+            vac_list = sj.get_api_data()
             json_data = JsonData()
             json_data.add(vac_list)
             second_user_input = input("Хотите вывести данные о вакансиях в консоль? 1 - да, 2 - нет, 0 - выход: ")
             while True:
                 if second_user_input == "1":
                     json_data.read()
+                    list_vacancies = json_data.read()
+                    for vacancy in sorted(list_vacancies):
+                        print(vacancy)
+                        print("-" * 50)
+
                     break
                 elif second_user_input == "2":
                     break

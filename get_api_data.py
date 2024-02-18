@@ -26,7 +26,7 @@ class GetApiDataHeadHunter(GetApiData):
 
     @classmethod
     def get_api_data(cls):
-        dict_vacancies = {}
+        vacancies_filter = []
         response = requests.get(cls.api, params={'text': input("Поиск по профессиям на сайте HeadHunter: ")})
         if response.status_code == 200:
             data = response.json()
@@ -60,13 +60,13 @@ class GetApiDataHeadHunter(GetApiData):
                                     salary = ''
                                     cls.salary = v['salary']['to']
                                 else:
-                                    salary = f"от {v['salary']['from']}"
+                                    salary = f"{v['salary']['from']}"
                                     cls.salary = v['salary']['to']
                                 if v['salary']['to'] is None:
                                     salary_to = ''
                                     cls.salary = v['salary']['from']
                                 else:
-                                    salary_to = f"до {v['salary']['to']}"
+                                    salary_to = f"{v['salary']['to']}"
                                     cls.salary = v['salary']['to']
                                 salary_currency = v['salary']['currency']
                             if v["address"] is None:
@@ -74,11 +74,19 @@ class GetApiDataHeadHunter(GetApiData):
                             else:
                                 city_address = v["address"]["city"]
                             link = f'https://hh.ru/vacancy/{v["id"]}'
-                            key = f"{v['id']},  {v['name']},  {salary},  {salary_to},  {salary_currency},  {city_address},  {v['employer']['name']},  {link}"
-                            dict_vacancies[key] = cls.salary
+                            vacancies_filter.append({
+                                "id_vac": v["id"],
+                                "name": v["name"],
+                                "salary_from": salary,
+                                "salary_to": salary_to,
+                                "currency": salary_currency,
+                                "city": city_address,
+                                "hirer": v['employer']['name'],
+                                "url": link
+                            })
                     else:
                         break
-            return dict_vacancies
+            return vacancies_filter
         else:
             print(f"Доступ к сайту не получен! Код ошибки: {response.status_code}")
 
@@ -95,7 +103,7 @@ class GetApiDataSuperJob(GetApiData):
 
     @classmethod
     def get_api_data(cls):
-        dict_vacancies = {}
+        vacancies_filter = []
         param_word = input("Поиск по профессиям на сайте SuperJob: ")
         while True:
             lim = input("Введите желаемое количество результатов выдачи: ")
@@ -122,22 +130,17 @@ class GetApiDataSuperJob(GetApiData):
         if response.status_code == 200:
             vacancies = response.json()["objects"]
             for vacancy in vacancies:
-                if vacancy["payment_from"] == 0 and vacancy["payment_to"] == 0:
-                    vacancy["payment_from"] = "зарплата"
-                    vacancy["payment_to"] = "не указана"
-                    cls.salary = 0
-                    vacancy["currency"] = ''
-                elif vacancy["payment_from"] == 0:
-                    vacancy["payment_from"] = "до"
-                    cls.salary = vacancy["payment_to"]
-                elif vacancy["payment_to"] == 0:
-                    cls.salary = vacancy["payment_from"]
-                    vacancy["payment_from"] = f"от {vacancy['payment_from']}"
-                    vacancy["payment_to"] = ''
-                elif vacancy["payment_to"] != 0 and vacancy["payment_from"] != 0:
-                    cls.salary = vacancy["payment_to"]
-                key = f'{vacancy["id"]},  {vacancy["profession"]},  {vacancy["payment_from"]},  {vacancy["payment_to"]},  {vacancy["currency"]},  {vacancy["town"]["title"]},  {vacancy["link"]}'
-                dict_vacancies[key] = cls.salary
-            return dict_vacancies
+                vacancies_filter.append({
+                    "id_vac": vacancy["id"],
+                    "name": vacancy["profession"],
+                    "salary_from": vacancy["payment_from"],
+                    "salary_to": vacancy["payment_to"],
+                    "currency": vacancy["currency"],
+                    "city": vacancy["address"],
+                    "hirer": vacancy["candidat"],
+                    "url": vacancy["link"]
+                })
+            return vacancies_filter
         else:
             print(f"Доступ к сайту не получен! Код ошибки: {response.status_code}")
+
